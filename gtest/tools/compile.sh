@@ -5,7 +5,7 @@ if [ "$#" -ne 1 ]; then
     >&2 echo 'Set BUILD_DIR to point to the pupnp build directory'
 fi
 
-BUILD_DIR="../../build"
+BUILD_DIR="$(pwd)/../../build"
 
 TESTNAME=$(/usr/bin/basename -s.cpp "$1")
 
@@ -23,7 +23,6 @@ compile_flags=(\
 -I"$BUILD_DIR"/upnp/src/threadutil \
 -I"$BUILD_DIR"/ixml/inc \
 -DUPNP_ENABLE_IPV6 \
-"$1" \
 "$BUILD_DIR"/lib/libgtestd.a \
 "$BUILD_DIR"/lib/libgmockd.a \
 "$BUILD_DIR"/upnp/libupnp.a \
@@ -42,5 +41,36 @@ if false; then
     echo >> compile_flags.txt
 fi
 
+file_name=${TESTNAME}.cpp
+full_file_name="$(pwd)/${file_name}"
+echo "${full_file_name}"
+#arguments="[\"/usr/bin/clang++\""
+arguments="[\"/usr/bin/g++\""
+for i in "${!compile_flags[@]}"; do
+    arguments="${arguments}, \"${compile_flags[$i]}\""
+done
+arguments1="${arguments}, \"${full_file_name}\"]"
+#echo "${arguments}"
+arguments2="${arguments}, \"tools.cpp\"]"
+
+#command_line="\"/usr/bin/g++ ${compile_flags[*]}\""
+
+        #"command": ${command_line},
+cat > compile_commands.json <<EOF
+[
+    {
+        "directory": "$(pwd)",
+        "arguments": ${arguments1},
+        "file": "${full_file_name}"
+    },
+    {
+        "directory": "$(pwd)",
+        "arguments": ${arguments2},
+        "file": "tools.cpp"
+    }
+]
+EOF
+
 /usr/bin/g++ "${compile_flags[@]}"
+#/usr/bin/clang++ "${compile_flags[@]}"
 

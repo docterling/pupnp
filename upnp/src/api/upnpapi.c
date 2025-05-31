@@ -43,8 +43,8 @@
 #include "upnpapi.h"
 
 #include "ThreadPool.h"
-#include "UpnpStdInt.h"
-#include "UpnpUniStd.h" /* for close() */
+#include "UpnpStdInt.h" // IWYU pragma: keep
+#include "UpnpUniStd.h" /* for close() */ // IWYU pragma: keep
 #include "httpreadwrite.h"
 #include "membuffer.h"
 #include "soaplib.h"
@@ -66,7 +66,6 @@
 #include <sys/stat.h>
 
 #include <assert.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -12,6 +12,10 @@ Version 1.16.0
 Version 1.14.21
 *******************************************************************************
 
+2025-01-23 LutzenH <LutzenH(at)github.com>
+
+	Fix subs not working on Windows due to missing netmask
+
 2024-11-21 Marcelo Roberto Jimenez <mroberto(at)users.sourceforge.net>
 
 	- Lots of IXML fuzzer fixes

@@ -23,11 +23,11 @@ dnl #
 dnl # *please update only once, before a formal release, not for each change*
 dnl #
 dnl ############################################################################
-AC_INIT([libupnp],[1.14.22],[mroberto@users.sourceforge.net])
+AC_INIT([libupnp],[1.14.23],[mroberto@users.sourceforge.net])
 AC_SUBST([LT_VERSION_IXML], [12:3:1])
-AC_SUBST([LT_VERSION_UPNP], [19:2:2])
+AC_SUBST([LT_VERSION_UPNP], [19:3:2])
 dnl ############################################################################
-dnl # Release 1.14.22
+dnl # Release 1.14.23
 dnl # "current:revision:age"
 dnl #
 dnl # - Code has changed in upnp
@@ -51,7 +51,16 @@ dnl # - interfaces removed or changed in ixml
 dnl #   age: eee_1_1 -> 0
 dnl #
 dnl #AC_SUBST([LT_VERSION_IXML], [12:3:1])
-dnl #AC_SUBST([LT_VERSION_UPNP], [19:1:2])
+dnl #AC_SUBST([LT_VERSION_UPNP], [19:3:2])
+dnl ############################################################################
+dnl # Release 1.14.22
+dnl # "current:revision:age"
+dnl #
+dnl # - Code has changed in upnp
+dnl #   revision: aaa_1_1 -> aaa_1_2
+dnl #
+dnl #AC_SUBST([LT_VERSION_IXML], [12:3:1])
+dnl #AC_SUBST([LT_VERSION_UPNP], [19:2:2])
 dnl ############################################################################
 dnl # Release 1.14.21
 dnl # "current:revision:age"

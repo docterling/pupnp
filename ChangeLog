@@ -12,6 +12,14 @@ Version 1.16.0
 Version 1.14.23
 *******************************************************************************
 
+2025-06-07 Ryan C. Underwood <runderwo(at)github.com>
+
+	Improve SSDP initialization and error handling (#486)
+
+	It was possible for some uninitialized garbage to cause getaddrinfo() to
+	fail on glibc 2.41, which would crash the client program.  Instead,
+	zero the whole struct, and gracefully handle getaddrinfo() failures.
+
 *******************************************************************************
 Version 1.14.22
 *******************************************************************************

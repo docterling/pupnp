@@ -72,8 +72,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
          files: |
-            ${bz2_name}
-            ${bz2_name}.sha1
+            ${{ bz2_name }}
+            ${{ bz2_name }}.sha1
       - name: Homekeeping
         run: |
           #

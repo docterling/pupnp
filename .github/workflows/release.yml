@@ -39,6 +39,7 @@ jobs:
           ./bootstrap &&
           ./configure
       - name: Build
+        id: find-bzname
         run: |
           #
           # Build and run checks
@@ -51,7 +52,9 @@ jobs:
           # Save and print
           echo "bz2_name=${bz2_name}" >> "$GITHUB_ENV"
           echo >> $GITHUB_STEP_SUMMARY
-          echo "bz2_name=${bz2_name}" >> $GITHUB_STEP_SUMMARY
+          echo "bz2_name=${bz2_name}" >> "$GITHUB_STEP_SUMMARY"
+          # Try via step output parameter
+          echo "bz2_name=${bz2_name}" >> "$GITHUB_OUTPUT"
       - name: SHA1
         #
         # Calculate the checksum
@@ -72,8 +75,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
          files: |
-            ${{ bz2_name }}
-            ${{ bz2_name }}.sha1
+            ${{ steps.find-bzname.outputs.bz2_name }}
+            ${{ steps.find-bzname.outputs.bz2_name }}.sha1
       - name: Homekeeping
         run: |
           #

@@ -83,6 +83,7 @@ GTAGS
 *.config
 *.creator
 *.creator.user
+*.creator.user.*
 *.cxxflags
 *.files
 *.includes

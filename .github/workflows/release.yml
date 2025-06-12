@@ -74,7 +74,9 @@ jobs:
         # This action uploads the generated release files to GitHub
         uses: softprops/action-gh-release@v2
         with:
-         files: |
+          draft: true
+          generate_release_notes: true
+          files: |
             ${{ steps.find-bzname.outputs.bz2_name }}
             ${{ steps.find-bzname.outputs.bz2_name }}.sha1
       - name: Homekeeping

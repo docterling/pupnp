@@ -65,7 +65,7 @@ SOCKET gSsdpReqSocket6 = INVALID_SOCKET;
 		#endif /* UPNP_ENABLE_IPV6 */
 	#endif	       /* INCLUDE_CLIENT_APIS */
 
-void RequestHandler();
+void RequestHandler(void);
 
 enum Listener
 {

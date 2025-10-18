@@ -898,8 +898,8 @@ int readFromSSDPSocket(SOCKET socket)
 		}
 		return 0;
 	}
-
 	free_ssdp_event_handler_data(data);
+
 	return (byteReceived < 0) ? -1 : 0;
 }
 

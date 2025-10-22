@@ -253,12 +253,12 @@ int TvDeviceHandleActionRequest(
  *	\li 3) Action requests.
  */
 int TvDeviceCallbackEventHandler(
-	/*! [in] The type of callback event. */
-	Upnp_EventType,
-	/*! [in] Data structure containing event data. */
-	const void *Event,
-	/*! [in] Optional data specified during callback registration. */
-	void *Cookie);
+		/*! [in] The type of callback event. */
+		Upnp_EventType,
+		/*! [in] Data structure containing event data. */
+		void *Event,
+		/*! [in] Optional data specified during callback registration. */
+		void *Cookie);
 
 /*!
  * \brief Update the TvDevice service state table, and notify all subscribed

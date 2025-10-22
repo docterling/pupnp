@@ -122,7 +122,7 @@ ithread_rwlock_t GlobalHndRWLock;
 ithread_mutex_t gUUIDMutex;
 
 /*! Initialization mutex. */
-ithread_mutex_t gSDKInitMutex = PTHREAD_MUTEX_INITIALIZER;
+static ithread_mutex_t gSDKInitMutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*! Global timer thread. */
 TimerThread gTimerThread;
@@ -215,19 +215,19 @@ int g_UpnpSdkEQMaxAge = MAX_SUBSCRIPTION_EVENT_AGE;
 
 /*! Global variable to denote the state of Upnp SDK == 0 if uninitialized,
  * == 1 if initialized. */
-int UpnpSdkInit = 0;
+static int UpnpSdkInit = 0;
 
 /*! Global variable to denote the state of Upnp SDK client registration.
  * == 0 if unregistered, >= 1 if registered - registered clients count. */
-int UpnpSdkClientRegistered = 0;
+static int UpnpSdkClientRegistered = 0;
 
 /*! Global variable to denote the state of Upnp SDK IPv4 device registration.
  * == 0 if unregistered, == 1 if registered. */
-int UpnpSdkDeviceRegisteredV4 = 0;
+static int UpnpSdkDeviceRegisteredV4 = 0;
 
 /*! Global variable to denote the state of Upnp SDK IPv6 device registration.
  * == 0 if unregistered, == 1 if registered. */
-int UpnpSdkDeviceregisteredV6 = 0;
+static int UpnpSdkDeviceregisteredV6 = 0;
 
 #ifdef UPNP_HAVE_OPTSSDP
 /*! Global variable used in discovery notifications. */
@@ -825,7 +825,7 @@ char *UpnpGetServerUlaGuaIp6Address(void)
  * \return On success, an integer greater than zero or UPNP_E_OUTOF_HANDLE on
  * 	failure.
  */
-static int GetFreeHandle()
+static int GetFreeHandle(void)
 {
 	/* Handle 0 is not used as NULL translates to 0 when passed as a handle
 	 */

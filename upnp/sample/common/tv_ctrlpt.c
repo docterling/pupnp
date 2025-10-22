@@ -46,6 +46,7 @@
 #include "upnp.h"
 
 #include "posix_overwrites.h" // IWYU pragma: keep
+#include <stdio.h>
 
 /*!
  * Mutex for protecting the global device list in a multi-threaded,
@@ -57,7 +58,7 @@ ithread_mutex_t DeviceListMutex;
 UpnpClient_Handle ctrlpt_handle = -1;
 
 /*! Device type for tv device. */
-const char TvDeviceType[] = "urn:schemas-upnp-org:device:tvdevice:1";
+static const char TvDeviceType[] = "urn:schemas-upnp-org:device:tvdevice:1";
 
 /*! Service names.*/
 const char *TvServiceName[] = {"Control", "Picture"};
@@ -75,7 +76,7 @@ char TvVarCount[TV_SERVICE_SERVCOUNT] = {
 /*!
    Timeout to request during subscriptions
  */
-int default_timeout = 1801;
+static int default_timeout = 1801;
 
 /*!
    The first node in the global device list, or NULL if empty
@@ -523,7 +524,7 @@ int TvCtrlPointGetDevice(int devnum, struct TvDeviceNode **devnode)
  *   None
  *
  ********************************************************************************/
-int TvCtrlPointPrintList()
+int TvCtrlPointPrintList(void)
 {
 	struct TvDeviceNode *tmpdevnode;
 	int i = 0;
@@ -1033,7 +1034,7 @@ void TvCtrlPointHandleGetVar(
  *
  ********************************************************************************/
 int TvCtrlPointCallbackEventHandler(
-	Upnp_EventType EventType, const void *Event, void *Cookie)
+	Upnp_EventType EventType, void *Event, void *Cookie)
 {
 	int errCode = 0;
 	(void)Cookie;
@@ -1481,7 +1482,7 @@ enum cmdloop_tvcmds
 };
 
 /*! Data structure for parsing commands from the command line. */
-struct cmdloop_commands
+typedef struct s_cmdloop_commands
 {
 	/* the string  */
 	const char *str;
@@ -1491,12 +1492,12 @@ struct cmdloop_commands
 	int numargs;
 	/* the args */
 	const char *args;
-} cmdloop_commands;
+} cmdloop_commands_t;
 
 /*! Mappings between command text names, command tag,
  * and required command arguments for command line
  * commands */
-static struct cmdloop_commands cmdloop_cmdlist[] = {{"Help", PRTHELP, 1, ""},
+static cmdloop_commands_t cmdloop_cmdlist[] = {{"Help", PRTHELP, 1, ""},
 	{"HelpFull", PRTFULLHELP, 1, ""},
 	{"ListDev", LSTDEV, 1, ""},
 	{"Refresh", REFRESH, 1, ""},
@@ -1518,7 +1519,7 @@ static struct cmdloop_commands cmdloop_cmdlist[] = {{"Help", PRTHELP, 1, ""},
 void TvCtrlPointPrintCommands(void)
 {
 	int i;
-	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands);
+	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands_t);
 
 	SampleUtil_Print("Valid Commands:\n");
 	for (i = 0; i < numofcmds; ++i) {
@@ -1554,7 +1555,7 @@ int TvCtrlPointProcessCommand(char *cmdline)
 	int arg1 = arg_val_err;
 	int arg2 = arg_val_err;
 	int cmdnum = -1;
-	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands);
+	int numofcmds = (sizeof cmdloop_cmdlist) / sizeof(cmdloop_commands_t);
 	int cmdfound = 0;
 	int i;
 	int rc;
@@ -1713,7 +1714,7 @@ int TvCtrlPointProcessCommand(char *cmdline)
 	case EXITCMD:
 		rc = TvCtrlPointStop();
 		exit(rc);
-		break;
+		// break;
 	default:
 		SampleUtil_Print("Command not implemented; see 'Help'\n");
 		break;

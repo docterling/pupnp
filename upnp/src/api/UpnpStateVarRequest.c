@@ -320,8 +320,9 @@ int UpnpStateVarRequest_set_CurrentVal(
 	UpnpStateVarRequest *p, const DOMString s)
 {
 	DOMString q = ixmlCloneDOMString(s);
-	if (!q)
+	if (!q) {
 		return 0;
+	}
 	ixmlFreeDOMString(p->m_CurrentVal);
 	p->m_CurrentVal = q;
 

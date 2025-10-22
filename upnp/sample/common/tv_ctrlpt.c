@@ -46,6 +46,8 @@
 #include "upnp.h"
 
 #include "posix_overwrites.h" // IWYU pragma: keep
+
+#include <signal.h> // IWYU pragma: keep
 #include <stdio.h>
 
 /*!

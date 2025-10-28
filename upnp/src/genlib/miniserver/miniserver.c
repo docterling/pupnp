@@ -94,6 +94,19 @@ uint16_t miniStopSockPort;
  * module vars
  */
 static MiniServerState gMServState = MSERV_IDLE;
+
+/*! Global list to track active socket connections */
+static LinkedList gActiveConnections;
+static ithread_mutex_t gActiveConnectionsMutex;
+static int gActiveConnectionsInitialized = 0;
+
+/*! Structure to hold active connection info */
+struct active_connection_t
+{
+	SOCKET socket;
+	time_t connect_time;
+};
+
 	#ifdef INTERNAL_WEB_SERVER
 static MiniServerCallback gGetCallback = NULL;
 static MiniServerCallback gSoapCallback = NULL;
@@ -368,6 +381,123 @@ static UPNP_INLINE void handle_error(
 }
 
 /*!
+ * \brief Compare function for active connections, return true if equal (found)
+ */
+static int active_connection_cmp(void *first, void *second)
+{
+	struct active_connection_t *conn1 = (struct active_connection_t *)first;
+	struct active_connection_t *conn2 =
+		(struct active_connection_t *)second;
+
+	/* Return non-zero (true) if sockets match */
+	return (conn1->socket == conn2->socket);
+}
+
+/*!
+ * \brief Add a socket to the active connections list
+ */
+static void add_active_connection(SOCKET sock)
+{
+	if (!gActiveConnectionsInitialized) {
+		ListInit(&gActiveConnections, active_connection_cmp, free);
+		ithread_mutex_init(&gActiveConnectionsMutex, NULL);
+		gActiveConnectionsInitialized = 1;
+	}
+
+	struct active_connection_t *conn =
+		malloc(sizeof(struct active_connection_t));
+	if (conn) {
+		conn->socket = sock;
+		conn->connect_time = time(NULL);
+
+		ithread_mutex_lock(&gActiveConnectionsMutex);
+		ListAddTail(&gActiveConnections, conn);
+		ithread_mutex_unlock(&gActiveConnectionsMutex);
+
+		UpnpPrintf(UPNP_INFO,
+			MSERV,
+			__FILE__,
+			__LINE__,
+			"Added active connection: socket %d\n",
+			sock);
+	}
+}
+
+/*!
+ * \brief Remove a socket from the active connections list
+ */
+static void remove_active_connection(SOCKET sock)
+{
+	if (!gActiveConnectionsInitialized)
+		return;
+
+	/* Create a temporary connection structure for searching */
+	struct active_connection_t search_conn;
+	search_conn.socket = sock;
+	search_conn.connect_time = 0; /* Not used for comparison */
+
+	ithread_mutex_lock(&gActiveConnectionsMutex);
+	ListNode *node = ListFind(&gActiveConnections, NULL, &search_conn);
+	if (node) {
+		ListDelNode(&gActiveConnections, node, 1);
+		UpnpPrintf(UPNP_INFO,
+			MSERV,
+			__FILE__,
+			__LINE__,
+			"Removed active connection: socket %d\n",
+			sock);
+	}
+	ithread_mutex_unlock(&gActiveConnectionsMutex);
+}
+
+/*!
+ * \brief Shutdown all active socket connections
+ */
+void shutdown_all_active_connections(void)
+{
+	if (!gActiveConnectionsInitialized)
+		return;
+
+	UpnpPrintf(UPNP_INFO,
+		MSERV,
+		__FILE__,
+		__LINE__,
+		"Shutting down all active socket connections\n");
+
+	ithread_mutex_lock(&gActiveConnectionsMutex);
+	ListNode *node = ListHead(&gActiveConnections);
+	int count = 0;
+	while (node) {
+		struct active_connection_t *conn =
+			(struct active_connection_t *)node->item;
+		if (conn && conn->socket != INVALID_SOCKET) {
+			UpnpPrintf(UPNP_INFO,
+				MSERV,
+				__FILE__,
+				__LINE__,
+				"Force shutting down socket %d\n",
+				conn->socket);
+			shutdown(conn->socket, SD_BOTH);
+			count++;
+		}
+		node = ListNext(&gActiveConnections, node);
+	}
+
+	/* Destroy the list and reset state */
+	ListDestroy(&gActiveConnections, 1);
+	gActiveConnectionsInitialized = 0;
+	ithread_mutex_unlock(&gActiveConnectionsMutex);
+	ithread_mutex_destroy(&gActiveConnectionsMutex);
+
+	UpnpPrintf(UPNP_INFO,
+		MSERV,
+		__FILE__,
+		__LINE__,
+		"Shutdown %d active socket connections and clean\n",
+		count);
+}
+
+/*!
  * \brief Free memory assigned for handling request and unitialize socket
  * functionality.
  */
@@ -377,6 +507,7 @@ static void free_handle_request_arg(
 {
 	struct mserv_request_t *request = (struct mserv_request_t *)args;
 
+	remove_active_connection(request->connfd);
 	sock_close(request->connfd);
 	free(request);
 }
@@ -488,6 +619,10 @@ static UPNP_INLINE void schedule_request_job(
 	TPJobInit(&job, (start_routine)handle_request, (void *)request);
 	TPJobSetFreeFunction(&job, free_handle_request_arg);
 	TPJobSetPriority(&job, MED_PRIORITY);
+
+	/* Add the connection to active connections list */
+	add_active_connection(connfd);
+
 	if (ThreadPoolAdd(&gMiniServerThreadPool, &job, NULL) != 0) {
 		UpnpPrintf(UPNP_INFO,
 			MSERV,
@@ -495,6 +630,7 @@ static UPNP_INLINE void schedule_request_job(
 			__LINE__,
 			"mserv %d: cannot schedule request\n",
 			connfd);
+		remove_active_connection(connfd);
 		free(request);
 		sock_close(connfd);
 		return;
@@ -686,6 +822,10 @@ static void RunMiniServer(
 				miniSock->miniServerStopSock, &rdSet);
 		}
 	}
+
+	/* shutdown connections */
+	shutdown_all_active_connections();
+
 	/* Close all sockets. */
 	sock_close(miniSock->miniServerSock4);
 	sock_close(miniSock->miniServerSock6);
@@ -1326,7 +1466,7 @@ int StopMiniServer()
 		ssdpAddr.sin_port = htons(miniStopSockPort);
 		sendto(sock,
 			buf,
-			bufLen,
+			(int)bufLen,
 			0,
 			(struct sockaddr *)&ssdpAddr,
 			socklen);

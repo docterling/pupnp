@@ -12,6 +12,10 @@ Version 1.16.0
 Version 1.14.26
 *******************************************************************************
 
+	- Bugfix skip init on vpn adaptors (#500)
+	- readFromSSDPSocket: Don't return error when sockets receive zero
+	length packet (#501)
+	- shutdown sockets in finish routine (#504)
 
 *******************************************************************************
 Version 1.14.25
